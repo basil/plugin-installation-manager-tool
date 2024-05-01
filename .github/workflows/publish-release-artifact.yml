@@ -1,8 +1,6 @@
 name: Publish artifact
 
-on:
-  release:
-    types: [published]
+on: push
 
 jobs:
   publish:
@@ -29,10 +27,8 @@ jobs:
           PROJECT_VERSION=${{ steps.set-version.outputs.project-version }}
           echo $PROJECT_VERSION
           echo "file-name=$FILE_NAME" >> $GITHUB_OUTPUT
+          SHA256SUM=$(curl -s https://repo.jenkins-ci.org/api/storage/releases/$GROUP_ID/$ARTIFACT_ID/$PROJECT_VERSION/$ARTIFACT_ID-$PROJECT_VERSION.jar | jq -r .checksums.sha256)
+          echo "${SHA256SUM}  $FILE_NAME-$PROJECT_VERSION" >$FILE_NAME-$PROJECT_VERSION.jar.sha256
           wget -q https://repo.jenkins-ci.org/releases/$GROUP_ID/$ARTIFACT_ID/$PROJECT_VERSION/$ARTIFACT_ID-$PROJECT_VERSION.jar \
-            -O $FILE_NAME-$PROJECT_VERSION.jar
-      - name: Upload Release Asset
-        id: upload-release-asset
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ steps.set-version.outputs.project-version }} ./${{ steps.fetch-artifact.outputs.file-name }}-${{ steps.set-version.outputs.project-version }}.jar
+            -O $FILE_NAME-$PROJECT_VERSION.jar \
+            && sha256sum -c --strict $FILE_NAME-$PROJECT_VERSION.jar.sha256
