@@ -16,8 +16,7 @@ jobs:
       - name: Set version
         id: set-version
         run: |
-          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "project-version=$version" >> $GITHUB_OUTPUT
+          echo "project-version=2.12.15" >> $GITHUB_OUTPUT
       - name: Fetch artifact
         id: fetch-artifact
         run: |
